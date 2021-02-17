@@ -98,7 +98,7 @@ namespace RemoteProtector
                 )
                 {
                     Description = "https://github.com/sinanbozkus/RemoteProtector",
-                    NetworkInterfaceTypes = NetworkInterfaceTypes.RemoteAccess,
+                    NetworkInterfaceTypes = NetworkInterfaceTypes.RemoteAccess | NetworkInterfaceTypes.Lan | NetworkInterfaceTypes.Wireless,
                     Protocol = FirewallProtocol.TCP,
                     RemoteAddresses = newIpAddreses,
                     LocalPorts = settings.Ports
