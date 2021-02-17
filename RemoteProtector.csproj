@@ -7,8 +7,6 @@
 		<PublishSingleFile>true</PublishSingleFile>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
-		<DebugSymbols>false</DebugSymbols>
-		<DebugType>None</DebugType>
 	</PropertyGroup>
 
 	

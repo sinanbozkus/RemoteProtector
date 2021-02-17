@@ -59,24 +59,31 @@ namespace RemoteProtector
 
                 List<string> ipAddreses = new();
 
-                foreach (var hostname in settings.Hostnames)
+                if(settings.Hostnames != null && settings.Hostnames.Any())
                 {
-                    try
+                    foreach (var hostname in settings.Hostnames)
                     {
-                        if (settings.DebugMode) Console.WriteLine($"Hostname {hostname} is checking...");
+                        try
+                        {
+                            if (settings.DebugMode) Console.WriteLine($"Hostname {hostname} is checking...");
 
-                        var ipAddress = Dns.GetHostAddresses(hostname);
-                        ipAddreses.Add(ipAddress[0].ToString());
+                            var ipAddress = Dns.GetHostAddresses(hostname);
+                            ipAddreses.Add(ipAddress[0].ToString());
 
-                        if (settings.DebugMode) Console.WriteLine($"IP found {ipAddreses[0].ToString()} for {hostname}");
-                    }
-                    catch (Exception ex)
-                    {
-                        if(settings.DebugMode) { Console.WriteLine($"Error: {ex.Message}"); }
+                            if (settings.DebugMode) Console.WriteLine($"IP found {ipAddreses[0]} for {hostname}");
+                        }
+                        catch (Exception ex)
+                        {
+                            if (settings.DebugMode) { Console.WriteLine($"Error: {ex.Message}"); }
+                        }
                     }
                 }
 
-                ipAddreses.AddRange(settings.IpAddresses);
+                if(settings.IpAddresses != null && settings.IpAddresses.Any())
+                {
+                    ipAddreses.AddRange(settings.IpAddresses);
+                }
+                
 
                 // Step 3 - Creating new rule.
 
