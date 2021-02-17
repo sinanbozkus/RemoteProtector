@@ -25,7 +25,7 @@ namespace RemoteProtector
             using IHost host = CreateHostBuilder(args).Build();
 
             AppSettings settings = new();
-            Configuration.GetSection(nameof(AppSettings)).Bind(settings);
+            Configuration.Bind(settings);
 
             // Checking Firewall
 
@@ -35,8 +35,7 @@ namespace RemoteProtector
                 {
                     // todo logs...
                 }
-
-                throw new Exception("There is no support for FirewallWASRuleWin8.");
+                Console.WriteLine("There is no support for FirewallWASRuleWin8.");
             }
 
             Interval.Set(() =>
@@ -44,7 +43,7 @@ namespace RemoteProtector
 
                 // Step 1 - Deleting current rules if exists.
 
-                var currentRules = FirewallManager.Instance.Rules.Where(x => x.Name == "RemoteProtector").ToList();
+                var currentRules = FirewallManager.Instance.Rules.Where(x => x.Name.ToLower() == "remote protector").ToList();
 
                 if (currentRules.Any())
                 {
@@ -52,6 +51,8 @@ namespace RemoteProtector
                     {
                         FirewallManager.Instance.Rules.Remove(rule);
                     }
+
+                    if (settings.DebugMode) Console.WriteLine($"Current rules rules deleted.");
                 }
 
                 // Step 2 - Resolving ip addreses from hostnames and creating an IP list.
@@ -62,12 +63,16 @@ namespace RemoteProtector
                 {
                     try
                     {
+                        if (settings.DebugMode) Console.WriteLine($"Hostname {hostname} is checking...");
+
                         var ipAddress = Dns.GetHostAddresses(hostname);
                         ipAddreses.Add(ipAddress[0].ToString());
+
+                        if (settings.DebugMode) Console.WriteLine($"IP found {ipAddreses[0].ToString()} for {hostname}");
                     }
                     catch (Exception ex)
                     {
-                        // todo log
+                        if(settings.DebugMode) { Console.WriteLine($"Error: {ex.Message}"); }
                     }
                 }
 
@@ -78,7 +83,7 @@ namespace RemoteProtector
                 var newIpAddreses = ipAddreses.Select(ip => new SingleIP(IPAddress.Parse(ip))).Distinct().ToArray();
 
                 var newRule = new FirewallWASRuleWin8(
-                    "RemoteProtector",
+                    "Remote Protector",
                     FirewallAction.Allow,
                     FirewallDirection.Inbound,
                     FirewallProfiles.Domain | FirewallProfiles.Private | FirewallProfiles.Public
@@ -93,6 +98,8 @@ namespace RemoteProtector
                 };
                 FirewallWAS.Instance.Rules.Add(newRule);
 
+                if (settings.DebugMode) Console.WriteLine($"New firewall rule added.");
+
             }, settings.TimePeriod * 60000);
 
             await host.RunAsync();
@@ -103,9 +110,10 @@ namespace RemoteProtector
                 .ConfigureAppConfiguration((hostingContext, configuration) =>
                 {
                     configuration
-                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                        .AddJsonFile("settings.json", optional: true, reloadOnChange: true);
 
                     Configuration = configuration.Build();
-                });
+                })
+                .UseWindowsService();
     }
 }
